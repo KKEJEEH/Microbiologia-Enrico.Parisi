@@ -1,0 +1,429 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+
+/* ══════════════════════════════════════════════════════════════
+   DATI MICROBIOLOGIA
+══════════════════════════════════════════════════════════════ */
+const CHAPTERS = [
+  {
+    id: 1,
+    icon: "🦠",
+    color: "#00e5c8",
+    bg: "from-teal-900/40 to-teal-950/20",
+    border: "border-teal-400/30",
+    glow: "shadow-teal-400/20",
+    tag: "Cap. 01",
+    title: "I Microbi",
+    subtitle: "La Fabbrica di Tutto",
+    preview: "Gli organismi più antichi della Terra, presenti ovunque: suolo, aria, acqua e persino nei ghiacciai polari.",
+    tags: ["Batteri", "Funghi", "Virus", "Protozoi"],
+    stats: [
+      { val: "60%", label: "biomassa terrestre" },
+      { val: "50%", label: "ossigeno prodotto" },
+      { val: "3.8 MLD", label: "anni di storia" },
+    ],
+    body: [
+      { type: "p", content: "<strong>Cosa sono i microbi?</strong> Organismi microscopici invisibili a occhio nudo. Forma di vita più antica — costituiscono il 60% della biomassa totale della Terra." },
+      { type: "fact", label: "⚡ Fatto straordinario", content: "Se tutti i microbi della Terra fossero messi in fila, raggiungerebbero una lunghezza di 10 miliardi di anni luce!" },
+      { type: "p", content: "<strong>5 gruppi principali:</strong> batteri, funghi, protozoi, microalghe, virus." },
+      { type: "p", content: "<strong>Vantaggi:</strong> Producono il 50% del nostro O₂. Fondamento della catena alimentare. Usati in alimenti fermentati. Supportano il sistema immunitario." },
+      { type: "p", content: "<strong>Svantaggi:</strong> Alcuni sono patogeni (malaria, tifo, difterite). Possono deteriorare e avvelenare cibi." },
+    ],
+  },
+  {
+    id: 2,
+    icon: "🍄",
+    color: "#ff6b35",
+    bg: "from-orange-900/40 to-orange-950/20",
+    border: "border-orange-400/30",
+    glow: "shadow-orange-400/20",
+    tag: "Cap. 02",
+    title: "Eucarioti",
+    subtitle: "Microrganismi Complessi",
+    preview: "Funghi, protozoi e alghe: organismi con nucleo definito e strutture cellulari complesse.",
+    tags: ["Funghi", "Protozoi", "Alghe", "Mitosi"],
+    stats: [
+      { val: "1928", label: "scoperta penicillina" },
+      { val: "5.1M", label: "specie di funghi" },
+      { val: "50%", label: "O₂ da microalghe" },
+    ],
+    body: [
+      { type: "p", content: "<strong>Funghi:</strong> Unicellulari (lieviti) o pluricellulari (muffe). Si riproducono tramite spore o gemmazione. Usati in panificazione, birra e antibiotici." },
+      { type: "fact", label: "🍄 Lo sapevi?", content: "La penicillina, primo antibiotico della storia, fu scoperta dal fungo Penicillium notatum nel 1928." },
+      { type: "p", content: "<strong>Protozoi:</strong> 'Primi animali.' Mantengono l'equilibrio microbico. Alcuni causano la malaria (Plasmodium)." },
+      { type: "p", content: "<strong>Alghe:</strong> Producono ossigeno tramite fotosintesi. Ricche di proteine, grassi, vitamine. Principale fonte alimentare per animali acquatici." },
+    ],
+  },
+  {
+    id: 3,
+    icon: "🌡️",
+    color: "#7fd4ff",
+    bg: "from-blue-900/40 to-blue-950/20",
+    border: "border-blue-400/30",
+    glow: "shadow-blue-400/20",
+    tag: "Cap. 03",
+    title: "Crescita",
+    subtitle: "Requisiti dei Microbi",
+    preview: "Temperatura, pH, ossigeno e carbonio: le condizioni che determinano dove e come i microrganismi prosperano.",
+    tags: ["Temperatura", "pH", "Ossigeno", "Carbonio"],
+    stats: [
+      { val: "110°C", label: "max di vita" },
+      { val: "-20°C", label: "min di vita" },
+      { val: "pH 0", label: "acidità tollerata" },
+    ],
+    body: [
+      { type: "p", content: "<strong>Temperatura — 4 categorie:</strong><br/>— Psicrofili: -5/15°C (ghiacciai)<br/>— Mesofili: 25/45°C (patogeni umani)<br/>— Termofili: 45/70°C (sorgenti termali)<br/>— Ipertermofili: 70/110°C (vulcani)" },
+      { type: "fact", label: "🌋 Record", content: "Batteri ipertermofili vivono nelle sorgenti vulcaniche a 110°C — temperature che cuocerebbero qualsiasi altro essere vivente!" },
+      { type: "p", content: "<strong>Ossigeno:</strong><br/>— Aerobi obbligati (necessitano O₂)<br/>— Anaerobi obbligati (uccisi dall'O₂)<br/>— Anaerobi facoltativi (entrambi)" },
+    ],
+  },
+  {
+    id: 4,
+    icon: "🧬",
+    color: "#b8ff6b",
+    bg: "from-lime-900/40 to-lime-950/20",
+    border: "border-lime-400/30",
+    glow: "shadow-lime-400/20",
+    tag: "Cap. 04",
+    title: "Batteri & Virus",
+    subtitle: "Struttura e Riproduzione",
+    preview: "Struttura, forme, riproduzione e il ruolo di batteri e virus nella salute e nella malattia.",
+    tags: ["Scissione binaria", "Patogeni", "Capside", "DNA"],
+    stats: [
+      { val: "20 min", label: "divisione E.coli" },
+      { val: "100x", label: "virus < batteri" },
+      { val: "1M+", label: "specie batteriche" },
+    ],
+    body: [
+      { type: "p", content: "<strong>Forme batteriche:</strong> cocco (sfera), bacillo (bastoncino), vibrio (virgola), spirillo (spirale), spirocheta (cavatappi)." },
+      { type: "fact", label: "⏱️ Velocità", content: "Un singolo batterio E.coli diventa 1 miliardo di cellule in sole 10 ore attraverso la scissione binaria ogni ~20 minuti!" },
+      { type: "p", content: "<strong>Virus:</strong> Solo acido nucleico + capside proteico. Parassiti cellulari obbligati. Visibili solo al microscopio elettronico. Usati in terapia genica." },
+    ],
+  },
+  {
+    id: 5,
+    icon: "🔬",
+    color: "#ff6b9d",
+    bg: "from-pink-900/40 to-pink-950/20",
+    border: "border-pink-400/30",
+    glow: "shadow-pink-400/20",
+    tag: "Cap. 05",
+    title: "Tipi Cellulari",
+    subtitle: "Procarioti vs Eucarioti",
+    preview: "Le differenze fondamentali tra cellule procariotiche ed eucariotiche, e tra cellule vegetali e animali.",
+    tags: ["Procarioti", "Eucarioti", "Membrana", "DNA"],
+    stats: [
+      { val: "10x", label: "eucariote > procariote" },
+      { val: "70S vs 80S", label: "ribosomi diversi" },
+      { val: "3 MLD", label: "anni di evoluzione" },
+    ],
+    body: [
+      { type: "p", content: "<strong>Procarioti:</strong> Nessun nucleo definito. DNA libero nel citoplasma. Nessun organello membranoso. 0.1–10 µm. Solo batteri e archei." },
+      { type: "p", content: "<strong>Eucarioti:</strong> Nucleo con doppia membrana. Mitocondri, RE, Golgi. 10–100 µm. Animali, piante, funghi, protozoi." },
+      { type: "fact", label: "🔬 Scala", content: "Una cellula eucariotica è 10x più grande di un batterio. Un virus è 100x più piccolo di un batterio!" },
+      { type: "p", content: "<strong>Teoria endosimbiotica:</strong> Mitocondri e cloroplasti erano originariamente batteri indipendenti inglobati da cellule ancestrali — hanno ancora DNA proprio e ribosomi 70S!" },
+    ],
+  },
+];
+
+const COMPARE_ROWS = [
+  { feature: "Nucleo definito", pro: "Assente", eu: "Presente", proGood: false, euGood: true },
+  { feature: "Dimensioni", pro: "0.1–10 µm", eu: "10–100 µm", proGood: null, euGood: null },
+  { feature: "Organelli membranosi", pro: "Assenti", eu: "Presenti", proGood: false, euGood: true },
+  { feature: "Riproduzione", pro: "Scissione binaria", eu: "Mitosi / Meiosi", proGood: null, euGood: null },
+  { feature: "DNA", pro: "Circolare, libero", eu: "Lineare, nel nucleo", proGood: null, euGood: null },
+  { feature: "Ribosomi", pro: "70S", eu: "80S (citoplasma)", proGood: null, euGood: null },
+  { feature: "Parete cellulare", pro: "Peptidoglicano", eu: "Solo piante/funghi", proGood: null, euGood: null },
+  { feature: "Esempi", pro: "Batteri, Archei", eu: "Animali, Piante, Funghi", proGood: null, euGood: null },
+];
+
+const GLOSSARY = [
+  { word: "Patogeno", def: "Microrganismo capace di causare malattia nell'ospite." },
+  { word: "Aerobio", def: "Organismo che necessita di ossigeno per sopravvivere." },
+  { word: "Anaerobio", def: "Organismo che vive in assenza di ossigeno." },
+  { word: "Endospora", def: "Struttura batterica resistente a calore e radiazioni." },
+  { word: "Capside", def: "Involucro proteico che racchiude il genoma virale." },
+  { word: "Mitosi", def: "Divisione cellulare che produce due cellule identiche." },
+  { word: "Plasmide", def: "Piccola molecola di DNA circolare extracromosomica." },
+  { word: "Flagello", def: "Appendice filamentosa usata per il movimento batterico." },
+  { word: "Autotrofo", def: "Organismo che sintetizza nutrimento dalla CO₂." },
+  { word: "Eterotrofo", def: "Organismo che ottiene carbonio da fonti organiche." },
+  { word: "Mesofilo", def: "Microbo con temperatura ottimale 25–45°C." },
+  { word: "Citochinesi", def: "Divisione del citoplasma dopo la mitosi." },
+];
+
+const QUIZ_QUESTIONS = [
+  { q: "Quale percentuale della biomassa terrestre è costituita da microbi?", opts: ["10%", "30%", "60%", "90%"], ans: 2, cap: 1 },
+  { q: "Da quale fungo fu scoperta la penicillina nel 1928?", opts: ["Aspergillus niger", "Penicillium notatum", "Saccharomyces cerevisiae", "Candida albicans"], ans: 1, cap: 2 },
+  { q: "Come si chiamano i batteri che vivono nelle sorgenti vulcaniche a 110°C?", opts: ["Psicrofili", "Mesofili", "Termofili", "Ipertermofili"], ans: 3, cap: 3 },
+  { q: "Ogni quanto minuti si divide E. coli in condizioni ottimali?", opts: ["5 min", "20 min", "60 min", "120 min"], ans: 1, cap: 4 },
+  { q: "Qual è la differenza nei ribosomi tra procarioti ed eucarioti?", opts: ["60S vs 90S", "70S vs 80S", "50S vs 70S", "80S vs 100S"], ans: 1, cap: 5 },
+  { q: "Quale processo usano le alghe per produrre ossigeno?", opts: ["Fermentazione", "Respirazione", "Fotosintesi", "Glicolisi"], ans: 2, cap: 2 },
+  { q: "Come si chiama la struttura batterica resistente al calore?", opts: ["Plasmide", "Capside", "Endospora", "Flagello"], ans: 2, cap: 4 },
+  { q: "Quali microrganismi producono circa il 50% dell'ossigeno atmosferico?", opts: ["Batteri", "Protozoi", "Virus", "Microalghe marine"], ans: 3, cap: 1 },
+  { q: "Come si chiama un organismo che sintetizza nutrimento dalla CO₂?", opts: ["Eterotrofo", "Autotrofo", "Patogeno", "Mesofilo"], ans: 1, cap: 3 },
+  { q: "Qual è la teoria che spiega l'origine dei mitocondri?", opts: ["Teoria cellulare", "Teoria endosimbiotica", "Teoria evolutiva", "Teoria genomica"], ans: 1, cap: 5 },
+];
+
+/* ══════════════════════════════════════════════════════════════
+   THREE.JS 3D CANVAS
+══════════════════════════════════════════════════════════════ */
+function ThreeScene({ activeChapter }) {
+  const mountRef = useRef(null);
+  const sceneRef = useRef(null);
+  const frameRef = useRef(null);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+    script.onload = () => initScene();
+    document.head.appendChild(script);
+    return () => {
+      cancelAnimationFrame(frameRef.current);
+      if (mountRef.current && sceneRef.current?.renderer) {
+        mountRef.current.removeChild(sceneRef.current.renderer.domElement);
+        sceneRef.current.renderer.dispose();
+      }
+      document.head.removeChild(script);
+    };
+  }, []);
+
+  function initScene() {
+    if (!window.THREE || !mountRef.current) return;
+    const THREE = window.THREE;
+    const W = mountRef.current.clientWidth;
+    const H = mountRef.current.clientHeight;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    mountRef.current.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 1000);
+    camera.position.set(0, 0, 18);
+
+    // Lights
+    const ambient = new THREE.AmbientLight(0x111122, 1.5);
+    scene.add(ambient);
+    const point1 = new THREE.PointLight(0x00e5c8, 3, 50);
+    point1.position.set(10, 10, 10);
+    scene.add(point1);
+    const point2 = new THREE.PointLight(0xff6b35, 2, 50);
+    point2.position.set(-10, -5, 5);
+    scene.add(point2);
+
+    const bacteria = [];
+    const colors = [0x00e5c8, 0xff6b35, 0x7fd4ff, 0xb8ff6b, 0xff6b9d];
+
+    // Create 3D bacteria/cells
+    for (let i = 0; i < 25; i++) {
+      const color = colors[i % colors.length];
+      const mat = new THREE.MeshPhongMaterial({
+        color,
+        emissive: new THREE.Color(color).multiplyScalar(0.15),
+        shininess: 80,
+        transparent: true,
+        opacity: 0.85,
+      });
+
+      let mesh;
+      const type = i % 4;
+      if (type === 0) {
+        // Rod bacterium
+        const cyl = new THREE.CylinderGeometry(0.3, 0.3, 1.4, 12);
+        mesh = new THREE.Mesh(cyl, mat);
+        const capGeo = new THREE.SphereGeometry(0.3, 12, 8);
+        const cap1 = new THREE.Mesh(capGeo, mat);
+        const cap2 = new THREE.Mesh(capGeo, mat);
+        cap1.position.y = 0.7; cap2.position.y = -0.7;
+        mesh.add(cap1); mesh.add(cap2);
+      } else if (type === 1) {
+        // Sphere (coccus)
+        mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5 + Math.random() * 0.3, 16, 12), mat);
+      } else if (type === 2) {
+        // Torus (donut)
+        mesh = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.15, 8, 20), mat);
+      } else {
+        // Icosahedron (virus)
+        mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 0), mat);
+      }
+
+      const spread = 12;
+      mesh.position.set(
+        (Math.random() - 0.5) * spread,
+        (Math.random() - 0.5) * spread * 0.6,
+        (Math.random() - 0.5) * 8
+      );
+      mesh.userData = {
+        vx: (Math.random() - 0.5) * 0.015,
+        vy: (Math.random() - 0.5) * 0.01,
+        rx: (Math.random() - 0.5) * 0.02,
+        ry: (Math.random() - 0.5) * 0.02,
+        rz: (Math.random() - 0.5) * 0.015,
+        phase: Math.random() * Math.PI * 2,
+        color,
+      };
+      scene.add(mesh);
+      bacteria.push(mesh);
+    }
+
+    // Wireframe sphere backdrop
+    const wfMat = new THREE.MeshBasicMaterial({ color: 0x00e5c8, wireframe: true, transparent: true, opacity: 0.04 });
+    const wfSphere = new THREE.Mesh(new THREE.SphereGeometry(14, 20, 15), wfMat);
+    scene.add(wfSphere);
+
+    // Mouse
+    let mx = 0, my = 0;
+    const onMove = (e) => {
+      const rect = mountRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      mx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      my = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    };
+    window.addEventListener("mousemove", onMove);
+
+    let t = 0;
+    sceneRef.current = { renderer, scene, camera, bacteria, wfSphere, cleanup: () => window.removeEventListener("mousemove", onMove) };
+
+    function animate() {
+      frameRef.current = requestAnimationFrame(animate);
+      t += 0.005;
+
+      bacteria.forEach((b, i) => {
+        b.rotation.x += b.userData.rx;
+        b.rotation.y += b.userData.ry;
+        b.rotation.z += b.userData.rz;
+        b.position.x += b.userData.vx;
+        b.position.y += b.userData.vy + Math.sin(t + b.userData.phase) * 0.003;
+        if (Math.abs(b.position.x) > 9) b.userData.vx *= -1;
+        if (Math.abs(b.position.y) > 6) b.userData.vy *= -1;
+      });
+
+      camera.position.x += (mx * 1.5 - camera.position.x) * 0.04;
+      camera.position.y += (my * 1 - camera.position.y) * 0.04;
+      camera.lookAt(0, 0, 0);
+
+      wfSphere.rotation.y += 0.001;
+      wfSphere.rotation.x += 0.0005;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+  }
+
+  return <div ref={mountRef} style={{ width: "100%", height: "100%" }} />;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BACTERIA CANVAS 2D (mini card)
+══════════════════════════════════════════════════════════════ */
+function BacteriaCanvas({ color, type }) {
+  const ref = useRef(null);
+  const frameRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W = (canvas.width = canvas.offsetWidth);
+    const H = (canvas.height = 110);
+    const particles = [];
+
+    for (let i = 0; i < 8; i++) {
+      particles.push({
+        x: Math.random() * W, y: Math.random() * H,
+        angle: Math.random() * Math.PI * 2,
+        speed: 0.3 + Math.random() * 0.5,
+        len: 16 + Math.random() * 20, w: 6 + Math.random() * 5,
+        rotSpeed: (Math.random() - 0.5) * 0.015,
+        flagAngle: Math.random() * Math.PI * 2,
+        r: 6 + Math.random() * 8,
+      });
+    }
+
+    function draw() {
+      frameRef.current = requestAnimationFrame(draw);
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach((p) => {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        if (type === "sphere") {
+          const g = ctx.createRadialGradient(-p.r * 0.3, -p.r * 0.3, 0, 0, 0, p.r);
+          g.addColorStop(0, color + "ee"); g.addColorStop(1, color + "33");
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI * 2); ctx.fill();
+        } else {
+          const g = ctx.createLinearGradient(-p.len / 2, -p.w / 2, p.len / 2, p.w / 2);
+          g.addColorStop(0, color + "55"); g.addColorStop(0.4, color + "dd"); g.addColorStop(1, color + "33");
+          ctx.fillStyle = g;
+          const r = p.w / 2;
+          ctx.beginPath();
+          ctx.moveTo(-p.len / 2 + r, -r); ctx.lineTo(p.len / 2 - r, -r);
+          ctx.arc(p.len / 2 - r, 0, r, -Math.PI / 2, Math.PI / 2);
+          ctx.lineTo(-p.len / 2 + r, r); ctx.arc(-p.len / 2 + r, 0, r, Math.PI / 2, -Math.PI / 2);
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = color + "88"; ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          for (let i = 0; i <= 16; i++) {
+            const tt = i / 16;
+            const fx = p.len / 2 + tt * 18, fy = Math.sin(tt * Math.PI * 2.5 + p.flagAngle) * 5;
+            i === 0 ? ctx.moveTo(fx, fy) : ctx.lineTo(fx, fy);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+        p.x += Math.cos(p.angle) * p.speed; p.y += Math.sin(p.angle) * p.speed;
+        p.angle += p.rotSpeed; p.flagAngle += 0.06;
+        if (p.x < -30) p.x = W + 30; if (p.x > W + 30) p.x = -30;
+        if (p.y < -20) p.y = H + 20; if (p.y > H + 20) p.y = -20;
+      });
+    }
+    draw();
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [color, type]);
+
+  return <canvas ref={ref} style={{ width: "100%", height: "110px", display: "block" }} />;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PROGRESS RING
+══════════════════════════════════════════════════════════════ */
+function ProgressRing({ pct, color, size = 60, stroke = 5, label }) {
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const dash = (pct / 100) * circ;
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <svg width={size} height={size}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={stroke} />
+        <circle
+          cx={size / 2} cy={size / 2} r={r} fill="none"
+          stroke={color} strokeWidth={stroke}
+          strokeDasharray={`${dash} ${circ - dash}`}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{ transition: "stroke-dasharray 0.8s ease" }}
+        />
+        <text x={size / 2} y={size / 2 + 5} textAnchor="middle" fill={color} fontSize="12" fontWeight="bold">
+          {pct}%
+        </text>
+      </svg>
+      <span style={{ fontSize: "0.55rem", color: "#7a9aa8", letterSpacing: "0.1em", textTransform: "uppercase" }}>{label}</span>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   QUIZ COMPONENT
+══════════════════════════════════════════════════════════════ */
+function QuizSection({ onScore }) {
+  const [current, setCurrent] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+  const [answers, setAnswers] = useState([]);
+  const [shake, setShake] = useState(false);
+  const [questions] = useState(() => [...QUIZ_QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 8));
+
+  const q = 
